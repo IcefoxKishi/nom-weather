@@ -1,0 +1,12 @@
+body {
+    writing-mode: vertical-rl;
+}
+
+h1 {
+    text-align: center
+}
+
+
+.datetime {
+    display: inline-block;
+}

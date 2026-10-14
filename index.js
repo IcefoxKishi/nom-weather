@@ -41,13 +41,6 @@ const timezone = response.timezone();
 const timezoneAbbreviation = response.timezoneAbbreviation();
 const utcOffsetSeconds = response.utcOffsetSeconds();
 
-console.log(
-	`\nCoordinates: ${latitude}°N ${longitude}°E`,
-	`\nElevation: ${elevation}m asl`,
-	`\nTimezone: ${timezone} ${timezoneAbbreviation}`,
-	`\nTimezone difference to GMT+0: ${utcOffsetSeconds}s`,
-);
-
 const current = response.current();
 const hourly = response.hourly();
 const daily = response.daily();
@@ -100,5 +93,3 @@ const weatherData = {
  * End of OpenMeteo-generated code. Below is human-written code, by me.
  */
 
-    // temp test code
-    document.getElementById('test').textContent = "宇宙洪荒";
