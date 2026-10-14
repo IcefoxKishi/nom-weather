@@ -1,12 +1,17 @@
 body {
     writing-mode: vertical-rl;
+    font-size: medium;
+    font-family: sans-serif;
 }
 
 h1 {
-    text-align: center
+    text-align: center;
 }
 
+b {
+    margin-bottom: 10px;
+}
 
-.datetime {
-    display: inline-block;
+.one-line {
+    display: flex;
 }

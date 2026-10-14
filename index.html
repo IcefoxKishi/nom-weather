@@ -7,17 +7,28 @@
     <!-- Should this be by height instead of width for tategaki? -->
     <meta charset="utf-8">
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.5/lunar.min.js"></script>
+
     <link rel="stylesheet" href="style.css">
     <script src="index.js" type="module"></script>
   </head>
   <body>
     <h1>地名</h1>
-
-    <div id="jiazi-year" class="datetime">某某</div>年
-    <div id="lunar-month" class="datetime">某</div>月
-    <div id="lunar-day" class="datetime">某某</div>
-    （<div id="jiazi-day" class="datetime">某某</div>）
-    <br>
+    <div class="one-line">
+      <b>農曆</b>
+      <div id="jiazi-year">某某</div>年
+      <div id="lunar-month">某</div>月
+      <div id="lunar-day">某某</div>
+      （<div id="jiazi-day">某某</div>）
+    </div>
+    <div class="one-line">
+      <b>西曆</b>
+      <div id="western-year">某某某某</div>年
+      <div id="western-month">某某</div>月
+      <div id="western-day">某某</div>日
+      <div id="western-hour">某某</div>點
+      <div id="western-minute">某某</div>分
+    </div>
 
   </body>
 </html>
