@@ -6,6 +6,45 @@ import * as cn from "https://unpkg.com/chinese-numbering@1.x/bundle/es.js";
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const FORECAST_NUM_DAYS = 10;
 
+const WEATHER_CODES = {
+	"0": "晴",
+	"1": "微晴",
+	"2": "微陰",
+	"3": "陰",
+
+	"45": "霧",
+	"48": "霧凇",
+
+	"51": "小雨霡霂",
+	"53": "雨霡霂",
+	"55": "大雨霢霂",
+	"56": "小雨霢霂木冰",
+	"57": "大雨霢霂木冰",
+
+	"61": "小雨",
+	"63": "雨",
+	"65": "大雨",
+	"66": "小雨木冰",
+	"67": "大雨木冰",
+
+	"71": "小雪",
+	"73": "雪",
+	"75": "大雪",
+
+	"77": "霰",
+
+	"80": "小雨乍灑乍止",
+	"81": "雨乍灑乍止",
+	"82": "大雨乍灑乍止",
+	"85": "小雪乍灑乍止",
+	"86": "大雪乍灑乍止",
+
+	"95": "雷雨",
+	"96": "雷小雹",
+	"97": "大雷雨",
+	"99": "雷大雹"
+};
+
 const 天干順序 = "甲乙丙丁戊己庚辛壬癸";
 const 地支順序 = "子丑寅卯辰巳午未申酉戌亥";
 const DIGITS = "〇一二三四五六七八九";
@@ -40,9 +79,9 @@ async function getWeather(lat, long) {
 	const params = {
 		latitude: lat,
 		longitude: long,
-		daily: ["temperature_2m_max", "temperature_2m_min"],
-		hourly: ["temperature_2m", "precipitation_probability", "precipitation", "rain", "wind_speed_10m", "temperature_80m", "wind_direction_10m", "wind_gusts_10m", "is_day", "showers", "snowfall", "snow_depth"],
-		current: ["temperature_2m", "relative_humidity_2m", "is_day", "apparent_temperature", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "precipitation", "rain", "showers", "snowfall"],
+		daily: ["temperature_2m_max", "temperature_2m_min", "weather_code"],
+		hourly: ["temperature_2m", "precipitation_probability", "precipitation", "rain", "wind_speed_10m", "temperature_80m", "wind_direction_10m", "wind_gusts_10m", "is_day", "showers", "snowfall", "snow_depth", "weather_code"],
+		current: ["temperature_2m", "relative_humidity_2m", "is_day", "apparent_temperature", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "precipitation", "rain", "showers", "snowfall", "weather_code"],
 		timezone: "auto",
 		forecast_days: FORECAST_NUM_DAYS
 	};
@@ -72,6 +111,7 @@ async function getWeather(lat, long) {
 			rain: curr.variables(8).value(),
 			showers: curr.variables(9).value(),
 			snowfall: curr.variables(10).value(),
+			weather_code: hourly.variables(11).value(),
 		},
 		hourly: {
 			time: Array.from(
@@ -90,6 +130,7 @@ async function getWeather(lat, long) {
 			showers: hourly.variables(9).valuesArray(),
 			snowfall: hourly.variables(10).valuesArray(),
 			snow_depth: hourly.variables(11).valuesArray(),
+			weather_code: hourly.variables(12).valuesArray(),
 		},
 		daily: {
 			time: Array.from(
@@ -98,6 +139,7 @@ async function getWeather(lat, long) {
 			),
 			temperature_2m_max: daily.variables(0).valuesArray(),
 			temperature_2m_min: daily.variables(1).valuesArray(),
+			weather_code: daily.variables(2).valuesArray(),
 		},
 	};
 
@@ -140,7 +182,10 @@ class 干支 {
 	}
 }
 
-//console.log(getWeather(47.65558560477314, -122.31509189726451));
+getWeather(47.65558560477314, -122.31509189726451).then(weather => {
+	console.log(weather);
+	setText('curr-weather', WEATHER_CODES[weather.current.weather_code]);
+})
 
 function updateDate() {
 	let currDate = new Date();

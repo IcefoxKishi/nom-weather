@@ -2,16 +2,39 @@ body {
     writing-mode: vertical-rl;
     font-size: medium;
     font-family: sans-serif;
+    padding: 10px;
+    justify-content: center;
 }
 
 h1 {
     text-align: center;
+    display: inline;
 }
 
 b {
     margin-bottom: 10px;
 }
 
+.curr-weather-disp {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+
 .one-line {
     display: flex;
+}
+
+.widget {
+    height: fit-content;
+    background-color:blanchedalmond;
+    border: 2 px solid;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px;
+}s
+
+.top-half, .bottom-half {
+    flex: 1;
+    padding: 10px;
 }
