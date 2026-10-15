@@ -8,6 +8,33 @@ const FORECAST_NUM_DAYS = 10;
 const 天干順序 = "甲乙丙丁戊己庚辛壬癸";
 const 地支順序 = "子丑寅卯辰巳午未申酉戌亥";
 const 干支配數 = 60;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const 甲子年 = 1984;
+
+const lunarFmtr = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', {
+	dateStyle: 'long'
+});
+
+function setText(id, text) {
+	document.getElementById(id).textContent = String(text);
+}
+
+function lunarDate(date) {
+	let parts = lunarFmtr.formatToParts(date);
+	return {
+		'month': parts.find(p => p.type === 'month').value,
+		'day': parts.find(p => p.type === 'day').value
+	};
+}
+
+/**
+ * Modulo operation, which works on negative numbers in a cyclic fashion.
+ * 
+ * For example, `mod(-5, 60)` returns 55.
+ */
+function mod(a, b) {
+	return ((a % b) + b) % b
+}
 
 async function getWeather(lat, long) {
 	const params = {
@@ -80,6 +107,10 @@ async function getWeather(lat, long) {
 /**
  * A sexagenary cycle index.
  * 
+ * # Constructor
+ * You can pass a `Number` or `Date` to the constructor.
+ * 
+ * ## From `Number`
  * The number passed to the constructor is zero-indexed. For example,
  * normally 辛酉 is 58, but my representation of 辛酉 in this class is
  * constructed by `new 干支(57)`, and `this.天干 === 7` as well as
@@ -90,14 +121,26 @@ async function getWeather(lat, long) {
  * If the number is `< 0` or `>= 60`, the number will be clipped into
  * the correct range so that the conversion will give the correct result.
  * 
+ * ## From `Date`
+ * The constructed `干支` is the sexagenary day of the given date.
+ * 
+ * # Other methods
+ * 
  * `toNumber()` returns whatever was passed into the constructor, so it will
  * be one off from what a human would expect.
  */
 class 干支 {
 	constructor(n) {
-		let m = ((n % 干支配數) + 干支配數) % 干支配數;
-		this.天干 = m % 天干順序.length;
-		this.地支 = m % 地支順序.length;
+		console.log(n, n instanceof Number);
+		if (typeof n === "number") {
+			let m = mod(n, 干支配數);
+			this.天干 = m % 天干順序.length;
+			this.地支 = m % 地支順序.length;
+		} else if (n instanceof Date) {
+			let numDays = Math.floor(n.getTime() / MS_PER_DAY);
+			this.天干 = (numDays + 6) % 天干順序.length;
+			this.地支 = (numDays + 4) % 地支順序.length;
+		}
 	}
 
 	toNumber() {
@@ -111,9 +154,15 @@ class 干支 {
 	toString() {
 		return 天干順序[this.天干] + 地支順序[this.地支];
 	}
+
+	static fromYear(westernYear) {
+		return new 干支(westernYear - 甲子年);
+	}
 }
 
-window.onload = () => {
-	console.log(getWeather(47.65558560477314, -122.31509189726451));
-	console.log((new 干支(57)).toNumber())
-};
+//console.log(getWeather(47.65558560477314, -122.31509189726451));
+
+setText('jiazi-year', 干支.fromYear(new Date().getFullYear()));
+setText('lunar-month', lunarDate(new Date()).month);
+setText('lunar-day', lunarDate(new Date()).day);
+setText('jiazi-day', new 干支(new Date()));
