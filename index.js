@@ -96,7 +96,7 @@ async function getWeather(lat, long) {
 	const params = {
 		latitude: lat,
 		longitude: long,
-		daily: ["temperature_2m_max", "temperature_2m_min", "weather_code"],
+		daily: ["temperature_2m_max", "temperature_2m_min", "weather_code", "sunrise", "sunset"],
 		hourly: ["temperature_2m", "precipitation_probability", "precipitation", "rain", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "is_day", "showers", "snowfall", "snow_depth", "weather_code"],
 		current: ["temperature_2m", "relative_humidity_2m", "is_day", "apparent_temperature", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "precipitation", "rain", "showers", "snowfall", "weather_code"],
 		timezone: "auto",
@@ -159,6 +159,8 @@ async function getWeather(lat, long) {
 			temperature_2m_max: daily.variables(0).valuesArray(),
 			temperature_2m_min: daily.variables(1).valuesArray(),
 			weather_code: daily.variables(2).valuesArray(),
+			sunrise: daily.variables(3).valuesArray(),
+			sunset: daily.variables(4).valuesArray()
 		},
 	};
 
@@ -306,6 +308,9 @@ function updateDate() {
 
 navigator.geolocation.getCurrentPosition((position) => {
   updateWeather(position.coords.latitude, position.coords.longitude);
+  setText('location', 
+	"緯度" + position.coords.latitude + "經度" + position.coords.longitude
+  );
 });
 
 updateDate();
