@@ -219,17 +219,18 @@ function updateWeather() {
 
 		/* Hourly weather */
 
+		// Reset table
 		let hourlyTable = document.getElementById('hourly');
 		while (hourlyTable.childNodes.length > 2) {
 			hourlyTable.removeChild(hourlyTable.lastChild);
 		}
 
+		// Set curr weather
 		setText('curr-hour-weather', WEATHER_CODES[weather.current.weather_code]);
 		setText('curr-hour-temp', temperatureText(actTemp));
 
 		for(let i = 1; i < weather.hourly.time.length; ++i) {
 			let date = weather.hourly.time[i];
-			let lunarDate = Lunar.fromDate(date);
 
 			let newRow = document.createElement('tr');
 			let headerEl = document.createElement('th');
@@ -243,6 +244,42 @@ function updateWeather() {
 			newRow.appendChild(weatherEl);
 			newRow.appendChild(tempEl);
 			hourlyTable.appendChild(newRow);
+		}
+
+		/* Daily weather */
+
+		// Reset table
+		let dailyTable = document.getElementById('daily');
+		while (dailyTable.childNodes.length > 2) {
+			dailyTable.removeChild(dailyTable.lastChild);
+		}
+
+		// Set current weather
+		setText('today-weather', WEATHER_CODES[weather.daily.weather_code[0]]);
+		setText('today-high', temperatureText(weather.daily.temperature_2m_max[0]));
+		setText('today-low', temperatureText(weather.daily.temperature_2m_min[0]));
+
+		for(let i = 1; i < weather.daily.time.length; ++i) {
+			let date = weather.daily.time[i];
+			let lunarDate = Lunar.fromDate(date);
+			let yaoriDay = 曜日順序[date.getDay()];
+			let jiaziDay = lunarDate.getDayInGanZhi();
+
+			let newRow = document.createElement('tr');
+			let headerEl = document.createElement('th');
+			let weatherEl = document.createElement('td');
+			let highEl = document.createElement('td');
+			let lowEl = document.createElement('td');
+
+			headerEl.textContent = jiaziDay + LONG_SPACE + yaoriDay;
+			weatherEl.textContent = WEATHER_CODES[weather.daily.weather_code[i]];
+			highEl.textContent = temperatureText(weather.daily.temperature_2m_max[i]);
+			lowEl.textContent = temperatureText(weather.daily.temperature_2m_min[i]);
+			newRow.appendChild(headerEl);
+			newRow.appendChild(weatherEl);
+			newRow.appendChild(highEl);
+			newRow.appendChild(lowEl);
+			dailyTable.appendChild(newRow);
 		}
 	})
 }
