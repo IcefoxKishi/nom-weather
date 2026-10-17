@@ -11,7 +11,12 @@ const FORECAST_NUM_DAYS = 10;
 const DEGREE_SYMBOL = "度";
 const FEELS_LIKE = "體感";
 const SUNRISE = "日出";
-const SUNSET = "日落";
+const SUNSET = "日入";
+
+const YEAR = "年";
+const MONTH = "月";
+const DAY = "日";
+const KE = "刻"
 
 const LONG_SPACE = "　";
 
@@ -24,11 +29,11 @@ const WEATHER_CODES = {
 	"45": "霧",
 	"48": "霧凇",
 
-	"51": "小雨霡霂",
-	"53": "雨霡霂",
-	"55": "大雨霢霂",
-	"56": "小雨霢霂木冰",
-	"57": "大雨霢霂木冰",
+	"51": "小霡霂",
+	"53": "霡霂",
+	"55": "大霢霂",
+	"56": "小霢霂木冰",
+	"57": "大霢霂木冰",
 
 	"61": "小雨",
 	"63": "雨",
@@ -96,7 +101,7 @@ function jiaziHour(hourNum) {
 }
 
 function keFromMins(mins) {
-	return Math.floor(mins % 15);
+	return Math.floor(mins / 15);
 }
 
 /**
@@ -295,6 +300,9 @@ function updateWeather(lat, long) {
 		}
 
 		// Set current weather
+		let jieQiSimplified = lunarDate.getJieQi();
+		let jieQi = (jieQiSimplified in SOLAR_TERMS_TRADITIONAL) ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified] : jieQiSimplified;
+		setText('today-jieqi', jieQi);
 		setText('today-weather', WEATHER_CODES[weather.daily.weather_code[0]]);
 		setText('today-high', temperatureText(weather.daily.temperature_2m_max[0]));
 		setText('today-low', temperatureText(weather.daily.temperature_2m_min[0]));
@@ -331,22 +339,23 @@ function updateWeather(lat, long) {
 	})
 }
 
-function updateDate() {
-	let currDate = new Date();
+function updateDate(currDate) {
 	let lunarDate = Lunar.fromDate(currDate);
 
 	setText('lunar-date',
-		lunarDate.getYearInGanZhiExact() + "年"
-		+ lunarDate.getMonthInChinese() + "月"
+		lunarDate.getYearInGanZhiExact() + YEAR
+		+ lunarDate.getMonthInChinese() + MONTH
 		+ lunarDate.getDayInChinese()
 		+ LONG_SPACE + lunarDate.getDayInGanZhi()
+		+ LONG_SPACE + jiaziHour(currDate.getHours()) + hanziNum(keFromMins(currDate.getMinutes())) + KE
 	);
 
 	setText('western-date',
-		hanziDigits(currDate.getFullYear()) + "年"
-		+ hanziNum(currDate.getMonth() + 1) + "月"
-		+ hanziNum(currDate.getDate()) + "日"
+		hanziDigits(currDate.getFullYear()) + YEAR
+		+ hanziNum(currDate.getMonth() + 1) + MONTH
+		+ hanziNum(currDate.getDate()) + DAY
 		+ LONG_SPACE + 曜日順序[currDate.getDay()] + "曜日"
+		+ LONG_SPACE + hanziNum(currDate.getHours()) + "時" + hanziNum(currDate.getMinutes()) + "分"
 	);
 
 	let jieQiSimplified = lunarDate.getPrevJieQi().getName();
@@ -357,8 +366,14 @@ function updateDate() {
 	);
 }
 
-navigator.geolocation.getCurrentPosition((position) => {
-  updateWeather(position.coords.latitude, position.coords.longitude);
-});
+function updateEverything() {
+	navigator.geolocation.getCurrentPosition((position) => {
+		updateWeather(position.coords.latitude, position.coords.longitude);
+	});
 
-updateDate();
+	updateDate(new Date());
+}
+
+setInterval(updateEverything, 30 * 1000);
+
+updateEverything();
