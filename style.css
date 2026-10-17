@@ -1,8 +1,17 @@
+@font-face {
+  font-family: 'NomNaTong';
+  src: url('/NomNaTong-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
     writing-mode: vertical-rl;
     font-size: medium;
-    font-family: sans-serif;
+    font-family: "NomNaTong", sans-serif;
     padding: 10px;
+    font-size: 20px;
 }
 
 h1 {

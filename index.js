@@ -2,6 +2,7 @@
 
 import { fetchWeatherApi } from "https://esm.sh/openmeteo";
 import * as cn from "https://unpkg.com/chinese-numbering@1.x/bundle/es.js";
+import {solar2lunar, jdFromDate} from "/lunar.js";
 
 const HOURLY_WEATHER_ID = 'hourly';
 
@@ -9,49 +10,49 @@ const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const FORECAST_NUM_DAYS = 10;
 
 const DEGREE_SYMBOL = "度";
-const FEELS_LIKE = "體感";
-const SUNRISE = "日出";
-const SUNSET = "日落";
+const FEELS_LIKE = "感覺如";
+const SUNRISE = "𩈘𡗶𠚐";
+const SUNSET = "𩈘𡗶𣵰";
 
 const LONG_SPACE = "　";
 
 const WEATHER_CODES = {
-	"0": "晴",
-	"1": "微晴",
-	"2": "微陰",
-	"3": "陰",
+	"0": "𡗶光",
+	"1": "可光",
+	"2": "唏𩄲",
+	"3": "𡗉𩄲",
 
-	"45": "霧",
-	"48": "霧凇",
+	"45": "霜霧",
+	"48": "霜𪉥",
 
-	"51": "小雨霡霂",
-	"53": "雨霡霂",
-	"55": "大雨霢霂",
-	"56": "小雨霢霂木冰",
-	"57": "大雨霢霂木冰",
+	"51": "𩅹洨珥",
+	"53": "𩅹洨𣃤",
+	"55": "𩅹洨𨤼",
+	"56": "𩅹洨氷珥",
+	"57": "𩅹洨氷𨤼",
 
-	"61": "小雨",
-	"63": "雨",
-	"65": "大雨",
-	"66": "小雨木冰",
-	"67": "大雨木冰",
+	"61": "𩅹噴𡮈",
+	"63": "𩅹噴",
+	"65": "𩅹噴𡚡",
+	"66": "𩅹氷𡮈",
+	"67": "𩅹氷𡚡",
 
-	"71": "小雪",
-	"73": "雪",
-	"75": "大雪",
+	"71": "雪淶珥",
+	"73": "雪淶",
+	"75": "雪淶𡗉",
 
-	"77": "霰",
+	"77": "𩅹雪毼",
 
-	"80": "小雨乍灑乍止",
-	"81": "雨乍灑乍止",
-	"82": "大雨乍灑乍止",
-	"85": "小雪乍灑乍止",
-	"86": "大雪乍灑乍止",
+	"80": "𩅹洨珥",
+	"81": "𩅹洨",
+	"82": "𩅹洨𡚡",
+	"85": "𩅹雪𡮈",
+	"86": "𩅹雪𡚡",
 
-	"95": "雷雨",
-	"96": "雷小雹",
-	"97": "大雷雨",
-	"99": "雷大雹"
+	"95": "雹",
+	"96": "𩅹𥒥珥",
+	"97": "雹𡚡",
+	"99": "𩅹𥒥𨤼"
 };
 
 // This is needed bc the Lunar library outputs solar terms in simplified
@@ -65,8 +66,8 @@ const SOLAR_TERMS_TRADITIONAL = {
 
 const 天干順序 = "甲乙丙丁戊己庚辛壬癸";
 const 地支順序 = "子丑寅卯辰巳午未申酉戌亥";
-const DIGITS = "〇一二三四五六七八九";
-const 曜日順序 = "日月火水木金土";
+const DIGITS = [..."空𠬠𠄩𠀧𦊚𠄼𦒹𠤩𠔭𠃩"];
+const 曜日順序 = [..."日𠄩𠀧𦊚𠄼𦒹𠤩"];
 const 干支配數 = 60;
 
 function setText(id, text) {
@@ -74,7 +75,17 @@ function setText(id, text) {
 }
 
 function hanziNum(n) {
-	return cn.numberToChinese(n);
+	if (n == 10){
+		return "𨒒";
+	}
+	if (n > 10 && n < 20){
+		return "𨒒" + String(n-10).replace(/\d/g, m => DIGITS[m])
+	}
+	let j = String(n).replace(/\d/g, m => DIGITS[m]);
+	if (n > 10 & n % 10 == 4){
+		j = j.slice(0, -2) + "四";
+	}
+	return j
 }
 
 function hanziDigits(n) {
@@ -107,7 +118,24 @@ function keFromMins(mins) {
 function mod(a, b) {
 	return ((a % b) + b) % b
 }
-
+function getGanZhi(date){
+	return 天干順序[(jdFromDate(date.getDate(), date.getMonth(), date.getFullYear()) + 9) % 10] + 地支順序[(jdFromDate(date.getDate(), date.getMonth(), date.getFullYear())+1)%12]
+}
+function getYearGanZhi(year){
+	return 天干順序[(year+6) % 10] + 地支順序[(year+8) % 12]
+}
+function lunarDateToNom(date){
+	var day, month, year;
+	if (date[0] <= 10){
+		day = "曚" + hanziNum(date[0]);
+	}
+	else{
+		day = "𣈗" + hanziNum(date[0]);
+	}
+	month = "𣎃" + hanziNum(date[1]);
+	year = "𢆥" + getYearGanZhi(date[2]);
+	return day + month + year;
+}
 async function getWeather(lat, long) {
 	const params = {
 		latitude: lat,
@@ -304,7 +332,7 @@ function updateWeather(lat, long) {
 			let date = weather.daily.time[i];
 			let lunarDate = Lunar.fromDate(date);
 			let yaoriDay = 曜日順序[date.getDay()];
-			let jiaziDay = lunarDate.getDayInGanZhi();
+			let jiaziDay = getGanZhi(date);
 
 			let jieQiSimplified = lunarDate.getJieQi();
 			let jieQi = (jieQiSimplified in SOLAR_TERMS_TRADITIONAL) ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified] : jieQiSimplified;
@@ -336,17 +364,20 @@ function updateDate() {
 	let lunarDate = Lunar.fromDate(currDate);
 
 	setText('lunar-date',
-		lunarDate.getYearInGanZhiExact() + "年"
-		+ lunarDate.getMonthInChinese() + "月"
-		+ lunarDate.getDayInChinese()
-		+ LONG_SPACE + lunarDate.getDayInGanZhi()
+		lunarDateToNom(solar2lunar(currDate.getDate(), currDate.getMonth(), currDate.getFullYear(), currDate.getTimezoneOffset()/60)) + LONG_SPACE + lunarDate.getDayInGanZhi()
 	);
-
+	let dayOfWeek = "";
+	if (currDate.getDay() == 0){
+		dayOfWeek = "主日";
+	}
+	else{
+		dayOfWeek = "次" + 曜日順序[currDate.getDay()];
+	}
 	setText('western-date',
-		hanziDigits(currDate.getFullYear()) + "年"
-		+ hanziNum(currDate.getMonth() + 1) + "月"
-		+ hanziNum(currDate.getDate()) + "日"
-		+ LONG_SPACE + 曜日順序[currDate.getDay()] + "曜日"
+		dayOfWeek + LONG_SPACE + 
+		"𣈗" + hanziNum(currDate.getDate()) + 
+		"𣎃" + hanziNum(currDate.getMonth() + 1) +
+		"𢆥" + hanziDigits(currDate.getFullYear())
 	);
 
 	let jieQiSimplified = lunarDate.getPrevJieQi().getName();
