@@ -51,6 +51,15 @@ const WEATHER_CODES = {
 	"99": "雷大雹"
 };
 
+// This is needed bc the Lunar library outputs solar terms in simplified
+const SOLAR_TERMS_TRADITIONAL = {
+	"惊蛰": "驚蟄",
+	"谷雨": "穀雨",
+	"小满": "小滿",
+	"芒种": "芒種",
+	"处暑": "處暑"
+}
+
 const 天干順序 = "甲乙丙丁戊己庚辛壬癸";
 const 地支順序 = "子丑寅卯辰巳午未申酉戌亥";
 const DIGITS = "〇一二三四五六七八九";
@@ -268,12 +277,17 @@ function updateWeather(lat, long) {
 			let yaoriDay = 曜日順序[date.getDay()];
 			let jiaziDay = lunarDate.getDayInGanZhi();
 
+			let jieQiSimplified = lunarDate.getJieQi().getName();
+			let jieQi = (jieQiSimplified in SOLAR_TERMS_TRADITIONAL) ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified] : jieQiSimplified;
+
 			let newRow = document.createElement('tr');
+			let jieqiEl = document.createElement('td');
 			let headerEl = document.createElement('th');
 			let weatherEl = document.createElement('td');
 			let highEl = document.createElement('td');
 			let lowEl = document.createElement('td');
 
+			jieqiEl.textContent = jieQi;
 			headerEl.textContent = jiaziDay + LONG_SPACE + yaoriDay;
 			weatherEl.textContent = WEATHER_CODES[weather.daily.weather_code[i]];
 			highEl.textContent = temperatureText(weather.daily.temperature_2m_max[i]);
@@ -303,6 +317,13 @@ function updateDate() {
 		+ hanziNum(currDate.getMonth() + 1) + "月"
 		+ hanziNum(currDate.getDate()) + "日"
 		+ LONG_SPACE + 曜日順序[currDate.getDay()] + "曜日"
+	);
+
+	let jieQiSimplified = lunarDate.getPrevJieQi().getName();
+	let jieQi = (jieQiSimplified in SOLAR_TERMS_TRADITIONAL) ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified] : jieQiSimplified;
+
+	setText('curr-jieqi',
+		jieQi
 	);
 }
 
