@@ -260,6 +260,7 @@ function updateWeather() {
 		setText('today-low', temperatureText(weather.daily.temperature_2m_min[0]));
 
 		for(let i = 1; i < weather.daily.time.length; ++i) {
+			console.log("day " + String(i));
 			let date = weather.daily.time[i];
 			let lunarDate = Lunar.fromDate(date);
 			let yaoriDay = 曜日順序[date.getDay()];
