@@ -251,6 +251,7 @@ function updateWeather(lat, long) {
 			headerEl.textContent = jiaziHour(date.getHours());
 			weatherEl.textContent = WEATHER_CODES[weather.hourly.weather_code[i]];
 			tempEl.textContent = temperatureText(weather.hourly.temperature_2m[i]);
+			tempEl.classList.add('left-align');
 			newRow.appendChild(headerEl);
 			newRow.appendChild(weatherEl);
 			newRow.appendChild(tempEl);
