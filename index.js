@@ -85,6 +85,9 @@ function hanziNum(n) {
 	if (n > 10 & n % 10 == 4){
 		j = j.slice(0, -2) + "四";
 	}
+	if (n > 10 & n % 10 == 0){
+		j = j.slice(0, -2) + "𠦩";
+	}
 	return j
 }
 
