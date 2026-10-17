@@ -201,8 +201,8 @@ class 干支 {
 	}
 }
 
-function updateWeather() {
-	getWeather(47.65558560477314, -122.31509189726451).then(weather => {
+function updateWeather(lat, long) {
+	getWeather(lat, long).then(weather => {
 		console.log(weather);
 
 		/* Curr weather */
@@ -304,5 +304,8 @@ function updateDate() {
 	);
 }
 
+navigator.geolocation.getCurrentPosition((position) => {
+  updateWeather(position.coords.latitude, position.coords.longitude);
+});
+
 updateDate();
-updateWeather();
