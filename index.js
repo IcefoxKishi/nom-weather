@@ -9,6 +9,9 @@ const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const FORECAST_NUM_DAYS = 10;
 
 const DEGREE_SYMBOL = "度";
+const FEELS_LIKE = "體感";
+const SUNRISE = "日出";
+const SUNSET = "日落";
 
 const LONG_SPACE = "　";
 
@@ -92,6 +95,10 @@ function jiaziHour(hourNum) {
 	return 地支順序[halfHourIdx] + "正初"[hourNum % 2];
 }
 
+function keFromMins(mins) {
+	return Math.floor(mins % 15);
+}
+
 /**
  * Modulo operation, which works on negative numbers in a cyclic fashion.
  * 
@@ -106,8 +113,8 @@ async function getWeather(lat, long) {
 		latitude: lat,
 		longitude: long,
 		daily: ["temperature_2m_max", "temperature_2m_min", "weather_code", "sunrise", "sunset"],
-		hourly: ["temperature_2m", "precipitation_probability", "precipitation", "rain", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "is_day", "showers", "snowfall", "snow_depth", "weather_code"],
-		current: ["temperature_2m", "relative_humidity_2m", "is_day", "apparent_temperature", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "precipitation", "rain", "showers", "snowfall", "weather_code"],
+		hourly: ["temperature_2m", "precipitation_probability", "precipitation", "rain", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "showers", "snowfall", "weather_code"],
+		current: ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "precipitation", "rain", "showers", "snowfall", "weather_code"],
 		timezone: "auto",
 		past_hours: 0,
 		forecast_hours: 24,
@@ -131,16 +138,15 @@ async function getWeather(lat, long) {
 			time: new Date((Number(curr.time()) + utcOffsetSec) * 1000),
 			temperature_2m: curr.variables(0).value(),
 			relative_humidity_2m: curr.variables(1).value(),
-			is_day: curr.variables(2).value(),
-			apparent_temperature: curr.variables(3).value(),
-			wind_speed_10m: curr.variables(4).value(),
-			wind_direction_10m: curr.variables(5).value(),
-			wind_gusts_10m: curr.variables(6).value(),
-			precipitation: curr.variables(7).value(),
-			rain: curr.variables(8).value(),
-			showers: curr.variables(9).value(),
-			snowfall: curr.variables(10).value(),
-			weather_code: hourly.variables(11).value(),
+			apparent_temperature: curr.variables(2).value(),
+			wind_speed_10m: curr.variables(3).value(),
+			wind_direction_10m: curr.variables(4).value(),
+			wind_gusts_10m: curr.variables(5).value(),
+			precipitation: curr.variables(6).value(),
+			rain: curr.variables(7).value(),
+			showers: curr.variables(8).value(),
+			snowfall: curr.variables(9).value(),
+			weather_code: hourly.variables(10).value(),
 		},
 		hourly: {
 			time: Array.from(
@@ -154,11 +160,9 @@ async function getWeather(lat, long) {
 			wind_speed_10m: hourly.variables(4).valuesArray(),
 			wind_direction_10m: hourly.variables(5).valuesArray(),
 			wind_gusts_10m: hourly.variables(6).valuesArray(),
-			is_day: hourly.variables(7).valuesArray(),
-			showers: hourly.variables(8).valuesArray(),
-			snowfall: hourly.variables(9).valuesArray(),
-			snow_depth: hourly.variables(10).valuesArray(),
-			weather_code: hourly.variables(11).valuesArray(),
+			showers: hourly.variables(7).valuesArray(),
+			snowfall: hourly.variables(8).valuesArray(),
+			weather_code: hourly.variables(9).valuesArray(),
 		},
 		daily: {
 			time: Array.from(
@@ -168,8 +172,12 @@ async function getWeather(lat, long) {
 			temperature_2m_max: daily.variables(0).valuesArray(),
 			temperature_2m_min: daily.variables(1).valuesArray(),
 			weather_code: daily.variables(2).valuesArray(),
-			sunrise: daily.variables(3).valuesArray(),
-			sunset: daily.variables(4).valuesArray()
+			sunrise: [...Array(daily.variables(3).valuesInt64Length())].map(
+				(_ , i) => new Date((Number(sunrise.valuesInt64(i))) * 1000)
+			),
+			sunset: [...Array(daily.variables(4).valuesInt64Length())].map(
+				(_ , i) => new Date((Number(sunset.valuesInt64(i))) * 1000)
+			),
 		},
 	};
 
@@ -223,7 +231,7 @@ function updateWeather(lat, long) {
 		let currTemp = temperatureText(actTemp) + (
 			(actTemp === feelTemp)
 				? ("")
-				: (LONG_SPACE + "體感" + temperatureText(feelTemp))
+				: (LONG_SPACE + FEELS_LIKE + temperatureText(feelTemp))
 		);
 
 		setText('curr-weather', WEATHER_CODES[weather.current.weather_code] + LONG_SPACE + currTemp);
@@ -236,22 +244,42 @@ function updateWeather(lat, long) {
 			hourlyTable.removeChild(hourlyTable.lastChild);
 		}
 
+		// 3 sunrises/sunsets in 24 hrs is theoretically possible
+		let sunrises = weather.daily.sunrise.slice(0, 3);
+		let sunsets = weather.daily.sunset.slice(0, 3);
+
 		// Set curr weather
 		setText('curr-hour-weather', WEATHER_CODES[weather.current.weather_code]);
 		setText('curr-hour-temp', temperatureText(actTemp));
 
 		for(let i = 1; i < weather.hourly.time.length; ++i) {
 			let date = weather.hourly.time[i];
+			let sunriseSunsetText = "";
+
+			if (
+				sunrises.some((sunrise, i, _) => sunrise.getDay() == date.getDay()
+				&& sunrise.getHours() == date.getHours())
+			) {
+				sunriseSunsetText = SUNRISE;
+			} else if (
+				sunsets.some((sunset, i, _) => sunset.getDay() == date.getDay()
+				&& sunset.getHours() == date.getHours())
+			) {
+				sunriseSunsetText = SUNSET;
+			}
 
 			let newRow = document.createElement('tr');
+			let sunriseSunsetEl = document.createElement('td');
 			let headerEl = document.createElement('th');
 			let weatherEl = document.createElement('td');
 			let tempEl = document.createElement('td');
 
+			sunriseSunsetEl.textContent = sunriseSunsetText;
 			headerEl.textContent = jiaziHour(date.getHours());
 			weatherEl.textContent = WEATHER_CODES[weather.hourly.weather_code[i]];
 			tempEl.textContent = temperatureText(weather.hourly.temperature_2m[i]);
 			tempEl.classList.add('left-align');
+			newRow.appendChild(sunriseSunsetEl);
 			newRow.appendChild(headerEl);
 			newRow.appendChild(weatherEl);
 			newRow.appendChild(tempEl);
