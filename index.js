@@ -277,7 +277,7 @@ function updateWeather(lat, long) {
 			let yaoriDay = 曜日順序[date.getDay()];
 			let jiaziDay = lunarDate.getDayInGanZhi();
 
-			let jieQiSimplified = lunarDate.getJieQi().getName();
+			let jieQiSimplified = lunarDate.getJieQi();
 			let jieQi = (jieQiSimplified in SOLAR_TERMS_TRADITIONAL) ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified] : jieQiSimplified;
 
 			let newRow = document.createElement('tr');
