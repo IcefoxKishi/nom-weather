@@ -300,7 +300,7 @@ function updateWeather(lat, long) {
 		}
 
 		// Set current weather
-		let jieQiSimplified = lunarDate.getJieQi();
+		let jieQiSimplified = Lunar.fromDate(weather.current.time).getJieQi();
 		let jieQi = (jieQiSimplified in SOLAR_TERMS_TRADITIONAL) ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified] : jieQiSimplified;
 		setText('today-jieqi', jieQi);
 		setText('today-weather', WEATHER_CODES[weather.daily.weather_code[0]]);
