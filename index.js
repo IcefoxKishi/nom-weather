@@ -292,6 +292,7 @@ function updateWeather(lat, long) {
 			weatherEl.textContent = WEATHER_CODES[weather.daily.weather_code[i]];
 			highEl.textContent = temperatureText(weather.daily.temperature_2m_max[i]);
 			lowEl.textContent = temperatureText(weather.daily.temperature_2m_min[i]);
+			newRow.appendChild(jieqiEl);
 			newRow.appendChild(headerEl);
 			newRow.appendChild(weatherEl);
 			newRow.appendChild(highEl);
