@@ -308,9 +308,6 @@ function updateDate() {
 
 navigator.geolocation.getCurrentPosition((position) => {
   updateWeather(position.coords.latitude, position.coords.longitude);
-  setText('location', 
-	"緯度" + position.coords.latitude + "經度" + position.coords.longitude
-  );
 });
 
 updateDate();
