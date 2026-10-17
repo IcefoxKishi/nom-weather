@@ -74,6 +74,11 @@ function setText(id, text) {
 	document.getElementById(id).textContent = String(text);
 }
 
+function unicodeSlice(str, start, end) {
+    const codePoints = [...str];
+    return codePoints.slice(start, end).join('');
+}
+
 function hanziNum(n) {
 	if (n == 10){
 		return "𨒒";
@@ -83,10 +88,10 @@ function hanziNum(n) {
 	}
 	let j = String(n).replace(/\d/g, m => DIGITS[m]);
 	if (n > 10 & n % 10 == 4){
-		j = j.slice(0, -2) + "四";
+		j = unicodeSlice(j, 0, -1) + "四";
 	}
 	if (n > 10 & n % 10 == 0){
-		j = j.slice(0, -2) + "𠦩";
+		j = unicodeSlice(j, 0, -1) + "𠦩";
 	}
 	return j
 }
