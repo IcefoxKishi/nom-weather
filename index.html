@@ -13,26 +13,26 @@
     <script src="index.js" type="module"></script>
   </head>
   <body>
-    <div id="curr-weather-disp">
-      <h1 id="curr-weather">氣候不明</h1>
+    <h1 id="curr-weather">氣候不明</h1>
 
-      <div class="widget">
-        <div class="one-line">
-          <b>農曆</b>
-          <div id="jiazi-year">某某</div>年
-          <div id="lunar-month">某</div>月
-          <div id="lunar-day">某某</div>
-          （<div id="jiazi-day">某某</div>）
-        </div>
+    <div class="widget">
+      <span class="one-line">
+        <b>農曆</b>
+        <span id="lunar-date">不明</span>
+      </span>
 
-        <div class="one-line">
-          <b>西曆</b>
-          <div id="western-year">某某某某</div>年
-          <div id="western-month">某某</div>月
-          <div id="western-day">某某</div>日
-        </div>
-      </div>
+      <span class="one-line">
+        <b>西曆</b>
+        <span id="western-date">不明</span>
+      </span>
     </div>
 
+    <table id="hourly" class="widget force-rtl" dir="rtl">
+      <tr>
+        <th>今</th>
+        <td id="curr-hour-weather">不明</td>
+        <td id="curr-hour-temp"></td>
+      </tr>
+    </table>
   </body>
 </html>

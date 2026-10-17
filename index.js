@@ -3,8 +3,14 @@
 import { fetchWeatherApi } from "https://esm.sh/openmeteo";
 import * as cn from "https://unpkg.com/chinese-numbering@1.x/bundle/es.js";
 
+const HOURLY_WEATHER_ID = 'hourly';
+
 const OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast";
 const FORECAST_NUM_DAYS = 10;
+
+const DEGREE_SYMBOL = "度";
+
+const LONG_SPACE = "　";
 
 const WEATHER_CODES = {
 	"0": "晴",
@@ -48,9 +54,8 @@ const WEATHER_CODES = {
 const 天干順序 = "甲乙丙丁戊己庚辛壬癸";
 const 地支順序 = "子丑寅卯辰巳午未申酉戌亥";
 const DIGITS = "〇一二三四五六七八九";
+const 曜日順序 = "日月火水木金土";
 const 干支配數 = 60;
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-const 甲子年 = 1984;
 
 function setText(id, text) {
 	document.getElementById(id).textContent = String(text);
@@ -64,6 +69,18 @@ function hanziDigits(n) {
 	return [...String(n)]
 		.map(d => DIGITS[d])
 		.join('');
+}
+
+function temperatureText(temp) {
+	return hanziNum(Math.round(temp)) + DEGREE_SYMBOL;
+}
+
+/**
+ * Converts an hour number to the 12-hour system. For example, hour 0 is 子正 and hour 1 is 丑初. The hour number should be in the range 0-23 inclusive.
+ */
+function jiaziHour(hourNum) {
+	let halfHourIdx = ((hourNum + 1) % 24) >> 1;
+	return 地支順序[halfHourIdx] + "正初"[hourNum % 2];
 }
 
 /**
@@ -80,10 +97,13 @@ async function getWeather(lat, long) {
 		latitude: lat,
 		longitude: long,
 		daily: ["temperature_2m_max", "temperature_2m_min", "weather_code"],
-		hourly: ["temperature_2m", "precipitation_probability", "precipitation", "rain", "wind_speed_10m", "temperature_80m", "wind_direction_10m", "wind_gusts_10m", "is_day", "showers", "snowfall", "snow_depth", "weather_code"],
+		hourly: ["temperature_2m", "precipitation_probability", "precipitation", "rain", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "is_day", "showers", "snowfall", "snow_depth", "weather_code"],
 		current: ["temperature_2m", "relative_humidity_2m", "is_day", "apparent_temperature", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m", "precipitation", "rain", "showers", "snowfall", "weather_code"],
 		timezone: "auto",
-		forecast_days: FORECAST_NUM_DAYS
+		past_hours: 0,
+		forecast_hours: 24,
+		past_days: 0,
+		forecast_days: FORECAST_NUM_DAYS,
 	};
 
 	const responses = await fetchWeatherApi(OPEN_METEO_URL, params);
@@ -116,26 +136,25 @@ async function getWeather(lat, long) {
 		hourly: {
 			time: Array.from(
 				{ length: (Number(hourly.timeEnd()) - Number(hourly.time())) / hourly.interval() }, 
-				(_ , i) => new Date((Number(hourly.time()) + i * hourly.interval() + utcOffsetSec) * 1000)
+				(_ , i) => new Date((Number(hourly.time()) + i * hourly.interval()) * 1000)
 			),
 			temperature_2m: hourly.variables(0).valuesArray(),
 			precipitation_probability: hourly.variables(1).valuesArray(),
 			precipitation: hourly.variables(2).valuesArray(),
 			rain: hourly.variables(3).valuesArray(),
 			wind_speed_10m: hourly.variables(4).valuesArray(),
-			temperature_80m: hourly.variables(5).valuesArray(),
-			wind_direction_10m: hourly.variables(6).valuesArray(),
-			wind_gusts_10m: hourly.variables(7).valuesArray(),
-			is_day: hourly.variables(8).valuesArray(),
-			showers: hourly.variables(9).valuesArray(),
-			snowfall: hourly.variables(10).valuesArray(),
-			snow_depth: hourly.variables(11).valuesArray(),
-			weather_code: hourly.variables(12).valuesArray(),
+			wind_direction_10m: hourly.variables(5).valuesArray(),
+			wind_gusts_10m: hourly.variables(6).valuesArray(),
+			is_day: hourly.variables(7).valuesArray(),
+			showers: hourly.variables(8).valuesArray(),
+			snowfall: hourly.variables(9).valuesArray(),
+			snow_depth: hourly.variables(10).valuesArray(),
+			weather_code: hourly.variables(11).valuesArray(),
 		},
 		daily: {
 			time: Array.from(
 				{ length: (Number(daily.timeEnd()) - Number(daily.time())) / daily.interval() }, 
-				(_ , i) => new Date((Number(daily.time()) + i * daily.interval() + utcOffsetSec) * 1000)
+				(_ , i) => new Date((Number(daily.time()) + i * daily.interval()) * 1000)
 			),
 			temperature_2m_max: daily.variables(0).valuesArray(),
 			temperature_2m_min: daily.variables(1).valuesArray(),
@@ -182,22 +201,70 @@ class 干支 {
 	}
 }
 
-getWeather(47.65558560477314, -122.31509189726451).then(weather => {
-	console.log(weather);
-	setText('curr-weather', WEATHER_CODES[weather.current.weather_code]);
-})
+function updateWeather() {
+	getWeather(47.65558560477314, -122.31509189726451).then(weather => {
+		console.log(weather);
+
+		/* Curr weather */
+
+		let actTemp = Math.round(weather.current.temperature_2m);
+		let feelTemp = Math.round(weather.current.apparent_temperature);
+		let currTemp = temperatureText(actTemp) + (
+			(actTemp === feelTemp)
+				? ("")
+				: (LONG_SPACE + "體感" + temperatureText(feelTemp))
+		);
+
+		setText('curr-weather', WEATHER_CODES[weather.current.weather_code] + LONG_SPACE + currTemp);
+
+		/* Hourly weather */
+
+		let hourlyTable = document.getElementById('hourly');
+		while (hourlyTable.childNodes.length > 2) {
+			hourlyTable.removeChild(hourlyTable.lastChild);
+		}
+
+		setText('curr-hour-weather', WEATHER_CODES[weather.current.weather_code]);
+		setText('curr-hour-temp', temperatureText(actTemp));
+
+		for(let i = 1; i < weather.hourly.time.length; ++i) {
+			let date = weather.hourly.time[i];
+			let lunarDate = Lunar.fromDate(date);
+
+			let newRow = document.createElement('tr');
+			let headerEl = document.createElement('th');
+			let weatherEl = document.createElement('td');
+			let tempEl = document.createElement('td');
+
+			headerEl.textContent = jiaziHour(date.getHours());
+			weatherEl.textContent = WEATHER_CODES[weather.hourly.weather_code[i]];
+			tempEl.textContent = temperatureText(weather.hourly.temperature_2m[i]);
+			newRow.appendChild(headerEl);
+			newRow.appendChild(weatherEl);
+			newRow.appendChild(tempEl);
+			hourlyTable.appendChild(newRow);
+		}
+	})
+}
 
 function updateDate() {
 	let currDate = new Date();
 	let lunarDate = Lunar.fromDate(currDate);
 
-	setText('jiazi-year', lunarDate.getYearInGanZhiExact());
-	setText('lunar-month', lunarDate.getMonthInChinese());
-	setText('lunar-day', lunarDate.getDayInChinese());
-	setText('jiazi-day', lunarDate.getDayInGanZhi());
-	setText('western-year', hanziDigits(currDate.getFullYear()));
-	setText('western-month', hanziNum(currDate.getMonth() + 1));
-	setText('western-day', hanziNum(currDate.getDate()));
+	setText('lunar-date',
+		lunarDate.getYearInGanZhiExact() + "年"
+		+ lunarDate.getMonthInChinese() + "月"
+		+ lunarDate.getDayInChinese()
+		+ LONG_SPACE + lunarDate.getDayInGanZhi()
+	);
+
+	setText('western-date',
+		hanziDigits(currDate.getFullYear()) + "年"
+		+ hanziNum(currDate.getMonth() + 1) + "月"
+		+ hanziNum(currDate.getDate()) + "日"
+		+ LONG_SPACE + 曜日順序[currDate.getDay()] + "曜日"
+	);
 }
 
 updateDate();
+updateWeather();
