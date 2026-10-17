@@ -173,10 +173,10 @@ async function getWeather(lat, long) {
 			temperature_2m_min: daily.variables(1).valuesArray(),
 			weather_code: daily.variables(2).valuesArray(),
 			sunrise: [...Array(daily.variables(3).valuesInt64Length())].map(
-				(_ , i) => new Date((Number(sunrise.valuesInt64(i))) * 1000)
+				(_ , i) => new Date((Number(daily.variables(3).valuesInt64(i))) * 1000)
 			),
 			sunset: [...Array(daily.variables(4).valuesInt64Length())].map(
-				(_ , i) => new Date((Number(sunset.valuesInt64(i))) * 1000)
+				(_ , i) => new Date((Number(daily.variables(4).valuesInt64(i))) * 1000)
 			),
 		},
 	};
