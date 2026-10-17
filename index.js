@@ -2,7 +2,7 @@
 
 import { fetchWeatherApi } from "https://esm.sh/openmeteo";
 import * as cn from "https://unpkg.com/chinese-numbering@1.x/bundle/es.js";
-import {solar2lunar, jdFromDate} from "./lunar.js";
+import {solar2lunar, jdFromDate} from "./nom-weather/lunar.js";
 
 const HOURLY_WEATHER_ID = 'hourly';
 
