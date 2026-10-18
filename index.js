@@ -137,14 +137,13 @@ function lunarDateToNom(date) {
   } else {
     day = "𣈗" + hanziNum(date[0]);
   }
-  if (month != 12){
-  	month = "𣎃" + hanziNum(date[1]);
+  if (month != 12) {
+    month = "𣎃" + hanziNum(date[1]);
+  } else {
+    month = "𣎃𣎖";
   }
-  else{
-	month = "𣎃𣎖";
-  }
-  if (date[3] == 1){
-	leap = "閏";
+  if (date[3] == 1) {
+    leap = "閏";
   }
   year = "𢆥" + getYearGanZhi(date[2]);
   return day + month + leap + year;
@@ -364,7 +363,7 @@ function updateWeather(lat, long) {
           ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified]
           : jieQiSimplified;
 
-	  setText("today-solar-term", jieQi);
+      setText("today-solar-term", jieQi);
       let newRow = document.createElement("tr");
       let jieqiEl = document.createElement("td");
       let headerEl = document.createElement("th");
@@ -409,12 +408,19 @@ function updateDate(currDate) {
   } else {
     dayOfWeek = "次" + 曜日順序[currDate.getDay()];
   }
+  let minutes = "";
+  if (currDate.getMinutes() == 0) {
+    minutes = "董";
+  } else if (currDate.getMinutes() == 30) {
+    minutes = "𥙪";
+  } else {
+    minutes = hanziNum(currDate.getMinutes()) + "𤼵";
+  }
   setText(
     "western-date",
     hanziNum(currDate.getHours()) +
       "𣇞" +
-      hanziNum(currDate.getMinutes()) +
-      "𤼵" +
+      minutes +
       dayOfWeek +
       LONG_SPACE +
       DAY +
