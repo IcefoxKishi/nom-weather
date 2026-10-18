@@ -85,6 +85,28 @@ const DIRECTIONS = [
 ];
 const DEGREES_IN_CIRCLE = 360;
 const DIR_INTERVAL = DEGREES_IN_CIRCLE / DIRECTIONS.length;
+const SOLAR_HOLIDAYS = new WeakMap();
+const LUNAR_HOLIDAYS = new WeakMap();
+SOLAR_HOLIDAYS.set([1, 1], "節陽曆");
+SOLAR_HOLIDAYS.set([30, 4], "𣈗解放沔南");
+SOLAR_HOLIDAYS.set([1, 5], "國際勞動");
+SOLAR_HOLIDAYS.set([7, 5], "𣈗戰勝奠邊府");
+SOLAR_HOLIDAYS.set([19, 8], "𣈗革命𣎃𠔭");
+SOLAR_HOLIDAYS.set([2, 9], "𣈗國慶");
+SOLAR_HOLIDAYS.set([24, 11], "𣈗文化");
+SOLAR_HOLIDAYS.set([25, 12], "禮降生");
+LUNAR_HOLIDAYS.set([1, 1], "曚𠬠節");
+LUNAR_HOLIDAYS.set([2, 1], "曚𠄩節");
+LUNAR_HOLIDAYS.set([3, 1], "曚𠀧節");
+LUNAR_HOLIDAYS.set([4, 1], "曚𦊚節");
+LUNAR_HOLIDAYS.set([5, 1], "曚𠄼節");
+LUNAR_HOLIDAYS.set([15, 1], "節元宵");
+LUNAR_HOLIDAYS.set([3, 3], "節寒食");
+LUNAR_HOLIDAYS.set([15, 4], "禮佛誕");
+LUNAR_HOLIDAYS.set([5, 5], "節端午");
+LUNAR_HOLIDAYS.set([15, 7], "禮盂蘭");
+LUNAR_HOLIDAYS.set([15, 8], "節中秋");
+LUNAR_HOLIDAYS.set([23, 12], "節翁公翁竈");
 
 function setText(id, text) {
   document.getElementById(id).textContent = String(text);
@@ -119,10 +141,14 @@ function temperatureText(temp) {
 function getGanZhi(date) {
   return (
     天干順序[
-      (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) + 9) % 10
+      (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) +
+        9) %
+        10
     ] +
     地支順序[
-      (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) + 1) % 12
+      (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) +
+        1) %
+        12
     ]
   );
 }
@@ -406,7 +432,13 @@ function updateDate(currDate) {
   );
   setText(
     "lunar-date",
-    lunarDateToNom(temp) + LONG_SPACE + getGanZhi(currDate) + (temp[0] == 15 ? "𦝃𣎃" + hanziNum(temp[1]) : ""),
+    lunarDateToNom(temp) +
+      LONG_SPACE +
+      getGanZhi(currDate) +
+      (temp[0] == 15 ? "𦝃𣎃" + hanziNum(temp[1]) : "") +
+      (LUNAR_HOLIDAYS.get([temp[0], temp[1]])
+        ? LUNAR_HOLIDAYS.has([temp[0], temp[1]])
+        : ""),
   );
   let dayOfWeek = "";
   if (currDate.getDay() == 0) {
@@ -429,7 +461,10 @@ function updateDate(currDate) {
       MONTH +
       hanziNum(currDate.getMonth() + 1) +
       YEAR +
-      hanziNum(currDate.getFullYear()),
+      hanziNum(currDate.getFullYear()) +
+      (SOLAR_HOLIDAYS.get([currDate.getDate(), currDate.getMonth() + 1])
+        ? SOLAR_HOLIDAYS.has([currDate.getDate(), currDate.getMonth() + 1])
+        : ""),
   );
 
   let jieQiSimplified = lunarDate.getPrevJieQi().getName();
