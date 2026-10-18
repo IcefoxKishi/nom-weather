@@ -143,14 +143,23 @@ function getYearGanZhi(year) {
 }
 function lunarDateToNom(date) {
   var day, month, year;
+  var leap = "";
   if (date[0] <= 10) {
     day = "曚" + hanziNum(date[0]);
   } else {
     day = "𣈗" + hanziNum(date[0]);
   }
-  month = "𣎃" + hanziNum(date[1]);
+  if (month != 12){
+  	month = "𣎃" + hanziNum(date[1]);
+  }
+  else{
+	month = "𣎃𣎖";
+  }
+  if (date[3] == 1){
+	leap = "閏";
+  }
   year = "𢆥" + getYearGanZhi(date[2]);
-  return day + month + year;
+  return day + month + leap + year;
 }
 async function getWeather(lat, long) {
   const params = {
