@@ -115,5 +115,5 @@ export function solar2lunar(dd,mm,yy,timeZone){
     if (lunarMonth >= 11 && diff < 4) {
         lunarYear -= 1;
     }
-    return [lunarDay, lunarMonth, lunarYear]
+    return [lunarDay, lunarMonth + 1, lunarYear]
 }
