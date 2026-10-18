@@ -109,18 +109,6 @@ function temperatureText(temp) {
 }
 
 /**
- * Converts an hour number to the 12-hour system. For example, hour 0 is 子正 and hour 1 is 丑初. The hour number should be in the range 0-23 inclusive.
- */
-function jiaziHour(hourNum) {
-  let halfHourIdx = ((hourNum + 1) % 24) >> 1;
-  return 地支順序[halfHourIdx] + "正初"[hourNum % 2];
-}
-
-function keFromMins(mins) {
-  return Math.floor(mins / 15);
-}
-
-/**
  * Modulo operation, which works on negative numbers in a cyclic fashion.
  *
  * For example, `mod(-5, 60)` returns 55.
@@ -275,42 +263,6 @@ async function getWeather(lat, long) {
   return weatherData;
 }
 
-/**
- * A sexagenary cycle index.
- *
- * The number passed to the constructor is zero-indexed. For example,
- * normally 辛酉 is 58, but my representation of 辛酉 in this class is
- * constructed by `new 干支(57)`, and `this.天干 === 7` as well as
- * `this.地支 === 9`. This is because the majority of operations do not
- * actually involve displaying the underlying numbers and so it is
- * easier to keep the number zero-indexed.
- *
- * If the number is `< 0` or `>= 60`, the number will be clipped into
- * the correct range so that the conversion will give the correct result.
- *
- * `toNumber()` returns whatever was passed into the constructor, so it will
- * be one off from what a human would expect.
- */
-class 干支 {
-  constructor(n) {
-    let m = mod(n, 干支配數);
-    this.天干 = m % 天干順序.length;
-    this.地支 = m % 地支順序.length;
-  }
-
-  toNumber() {
-    let tens = (this.天干 - this.地支) >> 1;
-    if (tens < 0) {
-      tens += 6;
-    }
-    return tens * 10 + this.天干;
-  }
-
-  toString() {
-    return 天干順序[this.天干] + 地支順序[this.地支];
-  }
-}
-
 function updateWeather(lat, long) {
   getWeather(lat, long).then((weather) => {
     console.log(weather);
@@ -375,7 +327,7 @@ function updateWeather(lat, long) {
       let tempEl = document.createElement("td");
 
       sunriseSunsetEl.textContent = sunriseSunsetText;
-      headerEl.textContent = jiaziHour(date.getHours());
+      headerEl.textContent = hanziNum(date.getHours()) + "𣇞";
       weatherEl.textContent = WEATHER_CODES[weather.hourly.weather_code[i]];
       tempEl.textContent = temperatureText(weather.hourly.temperature_2m[i]);
       tempEl.classList.add("left-align");
@@ -395,7 +347,6 @@ function updateWeather(lat, long) {
     }
 
     // Set current weather
-    setText("today-solar-term", jieQi);
     setText("today-weather", WEATHER_CODES[weather.daily.weather_code[0]]);
     setText("today-high", temperatureText(weather.daily.temperature_2m_max[0]));
     setText("today-low", temperatureText(weather.daily.temperature_2m_min[0]));
@@ -413,6 +364,7 @@ function updateWeather(lat, long) {
           ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified]
           : jieQiSimplified;
 
+	  setText("today-solar-term", jieQi);
       let newRow = document.createElement("tr");
       let jieqiEl = document.createElement("td");
       let headerEl = document.createElement("th");
