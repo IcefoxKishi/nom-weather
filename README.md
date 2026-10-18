@@ -1,1 +1,1 @@
-# wenyan-weather.github.io
+# icefoxkishi.github.io/nom-weather
