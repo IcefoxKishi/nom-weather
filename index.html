@@ -1,16 +1,33 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>𡗶𡐙容和</title>
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Should this be by height instead of width for tategaki? -->
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lunar-javascript/1.7.5/lunar.min.js"></script>
     <script src="./lodash.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link id="theme" rel="stylesheet" href="style.css" />
     <script src="index.js" type="module"></script>
+    <script>
+      function darkTheme() {
+        var theme = document.getElementById("theme");
+        var changer = document.getElementById("changer");
+        theme.href = "style-dark.css";
+        changer.onclick = lightTheme;
+        changer.innerHTML = "転𨖅榜牟𤏬";
+      }
+
+      function lightTheme() {
+        var theme = document.getElementById("theme");
+        var changer = document.getElementById("changer");
+        theme.href = "style.css";
+        changer.onclick = darkTheme;
+        changer.innerHTML = "転𨖅榜牟𣋁";
+      }
+    </script>
   </head>
   <body>
     <h1 id="curr-weather">當查究時節</h1>
@@ -55,11 +72,19 @@
 
     <footer>
       <h3>𥱬注</h3>
-      張呢得<u>𤞺氷</u>譯自版㭲𧵑<u>巍洰</u>。裊悶㨂𢵰，𢝙𢚸追及<a href="https://github.com/IcefoxKishi/nom-weather">Github</a>。
-      <br>
-      張呢使用<a href="https://open-meteo.com/">Open-Meteo</a>蹺紙法<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>。
-      <br>
+      張呢得<u>𤞺氷</u>譯自版㭲𧵑<u>巍洰</u>。裊悶㨂𢵰，𢝙𢚸追及<a
+        href="https://github.com/IcefoxKishi/nom-weather"
+        >Github</a
+      >。
+      <br />
+      張呢使用<a href="https://open-meteo.com/">Open-Meteo</a>蹺紙法<a
+        href="https://creativecommons.org/licenses/by/4.0/"
+        >CC BY 4.0</a
+      >。
+      <br />
       術算倂𣈗陰歷得發展𤳄<a href="https://www.xemamlich.uhm.vn/">胡玉德</a>。
+      <br>
+      <a id="changer" onclick="darkTheme()" style="cursor: pointer;">転𨖅榜牟𣋁</a>
     </footer>
   </body>
 </html>

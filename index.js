@@ -71,7 +71,7 @@ const SOLAR_TERMS_TRADITIONAL = {
 const 天干順序 = "甲乙丙丁戊己庚辛壬癸";
 const 地支順序 = "子丑寅卯辰巳午未申酉戌亥";
 const DIGITS = [..."空𠬠𠄩𠀧𦊚𠄼𦒹𠤩𠔭𠃩"];
-const 曜日順序 = [..."日𠄩𠀧𦊚𠄼𦒹𠤩"];
+const 曜日順序 = [..."日𠄩𠀧四𠄼𦒹𠤩"];
 const 干支配數 = 60;
 const DIRECTIONS = [
   "北（離）",

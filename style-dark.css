@@ -1,0 +1,66 @@
+@font-face {
+  font-family: 'HanNomGothic';
+  src: url('Han-Nom Gothic 1.32.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+    background-color: black;
+    color: white;
+    writing-mode: vertical-rl;
+    font-size: medium;
+    font-family: "HanNomGothic", sans-serif;
+    padding: 10px;
+    font-size: 20px;
+}
+
+h1 {
+    font-weight: normal;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+h3 {
+    margin-left: 0px;
+}
+
+b {
+    margin-bottom: 10px;
+}
+
+footer {
+    font-size: 15px;
+}
+
+.one-line {
+    display: flex;
+}
+
+.widget {
+    height: fit-content;
+    background-color:rgb(70, 50, 21);
+    border: 2 px solid;
+    border-radius: 10px;
+    padding: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.force-rtl * {
+  unicode-bidi: bidi-override;
+  text-align: right;
+}
+
+.left-align {
+    text-align: left;
+}
+
+#hourly {
+    writing-mode: horizontal-tb;
+}
+
+#changer{
+    border: solid 1px white;
+}

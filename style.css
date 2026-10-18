@@ -58,3 +58,9 @@ footer {
 #hourly {
     writing-mode: horizontal-tb;
 }
+
+#changer{
+    border: solid 1px black;
+    width: auto;
+    height: auto;
+}
