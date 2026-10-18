@@ -73,6 +73,18 @@ const 地支順序 = "子丑寅卯辰巳午未申酉戌亥";
 const DIGITS = [..."空𠬠𠄩𠀧𦊚𠄼𦒹𠤩𠔭𠃩"];
 const 曜日順序 = [..."日𠄩𠀧𦊚𠄼𦒹𠤩"];
 const 干支配數 = 60;
+const DIRECTIONS = [
+  "北（離）",
+  "東北（坤）",
+  "東（兌）",
+  "東南（乾）",
+  "南（坎）",
+  "西南（艮）",
+  "西（震）",
+  "西北（巽）",
+];
+const DEGREES_IN_CIRCLE = 360;
+const DIR_INTERVAL = DEGREES_IN_CIRCLE / DIRECTIONS.length;
 
 function setText(id, text) {
   document.getElementById(id).textContent = String(text);
@@ -107,10 +119,10 @@ function temperatureText(temp) {
 function getGanZhi(date) {
   return (
     天干順序[
-      (jdFromDate(date.getDate(), date.getMonth(), date.getFullYear()) + 9) % 10
+      (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) + 9) % 10
     ] +
     地支順序[
-      (jdFromDate(date.getDate(), date.getMonth(), date.getFullYear()) + 1) % 12
+      (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) + 1) % 12
     ]
   );
 }
@@ -263,7 +275,10 @@ function updateWeather(lat, long) {
       (actTemp === feelTemp
         ? ""
         : LONG_SPACE + FEELS_LIKE + temperatureText(feelTemp));
-
+    let adjustedDir =
+      (weather.current.wind_direction_10m + DIR_INTERVAL) % DEGREES_IN_CIRCLE;
+    let windDir = DIRECTIONS[Math.floor(adjustedDir / DIR_INTERVAL)];
+    let windSpeed = `${hanziNum(Math.round(weather.current.wind_speed_10m))}𣘃數𨑗𣇞`;
     setText(
       "curr-weather",
       WEATHER_CODES[weather.current.weather_code] +
@@ -274,6 +289,7 @@ function updateWeather(lat, long) {
         hanziNum(Math.round(weather.current.relative_humidity_2m)) +
         "分𤾓",
     );
+    setText("wind-info", windDir + LONG_SPACE + windSpeed);
 
     /* Hourly weather */
 
@@ -357,7 +373,7 @@ function updateWeather(lat, long) {
           ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified]
           : jieQiSimplified;
 
-      setText("today-solar-term", jieQi);
+      setText("today-solar-term", "節" + jieQi);
       let newRow = document.createElement("tr");
       let jieqiEl = document.createElement("td");
       let headerEl = document.createElement("th");
@@ -365,7 +381,7 @@ function updateWeather(lat, long) {
       let highEl = document.createElement("td");
       let lowEl = document.createElement("td");
 
-      jieqiEl.textContent = jieQi;
+      jieqiEl.textContent = "節" + jieQi;
       headerEl.textContent = jiaziDay + LONG_SPACE + yaoriDay;
       weatherEl.textContent = WEATHER_CODES[weather.daily.weather_code[i]];
       highEl.textContent = temperatureText(weather.daily.temperature_2m_max[i]);
@@ -382,19 +398,15 @@ function updateWeather(lat, long) {
 
 function updateDate(currDate) {
   let lunarDate = Lunar.fromDate(currDate);
-
+  let temp = solar2lunar(
+    currDate.getDate(),
+    currDate.getMonth(),
+    currDate.getFullYear(),
+    currDate.getTimezoneOffset() / 60,
+  );
   setText(
     "lunar-date",
-    lunarDateToNom(
-      solar2lunar(
-        currDate.getDate(),
-        currDate.getMonth(),
-        currDate.getFullYear(),
-        currDate.getTimezoneOffset() / 60,
-      ),
-    ) +
-      LONG_SPACE +
-      lunarDate.getDayInGanZhi(),
+    lunarDateToNom(temp) + LONG_SPACE + getGanZhi(currDate) + (temp[0] == 15 ? "𦝃𣎃" + hanziNum(temp[1]) : ""),
   );
   let dayOfWeek = "";
   if (currDate.getDay() == 0) {
@@ -406,7 +418,8 @@ function updateDate(currDate) {
     "western-date",
     hanziNum(currDate.getHours()) +
       "𣇞" +
-      hanziNum(currDate.getMinutes()) + "𤼵" +
+      hanziNum(currDate.getMinutes()) +
+      "𤼵" +
       hanziNum(currDate.getSeconds()) +
       "𣆰" +
       dayOfWeek +
@@ -425,7 +438,7 @@ function updateDate(currDate) {
       ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified]
       : jieQiSimplified;
 
-  setText("curr-jieqi", jieQi);
+  setText("curr-jieqi", "節" + jieQi);
 }
 
 navigator.geolocation.getCurrentPosition((position) => {
@@ -442,8 +455,8 @@ function updateEverything() {
 setInterval(function () {
   updateDate(new Date());
 }, 1000);
-setInterval(function(){
-	navigator.geolocation.getCurrentPosition((position) => {
+setInterval(function () {
+  navigator.geolocation.getCurrentPosition((position) => {
     updateWeather(position.coords.latitude, position.coords.longitude);
   });
 }, 30 * 1000);
