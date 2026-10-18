@@ -13,6 +13,10 @@ const DEGREE_SYMBOL = "度";
 const FEELS_LIKE = "感覺如";
 const SUNRISE = "𩈘𡗶𠚐";
 const SUNSET = "𩈘𡗶𣵰";
+const YEAR = "𢆥";
+const MONTH = "𣎃";
+const DAY = "𣈗";
+const KE = "刻";
 
 const LONG_SPACE = "　";
 
@@ -115,7 +119,7 @@ function jiaziHour(hourNum) {
 }
 
 function keFromMins(mins) {
-	return Math.floor(mins % 15);
+	return Math.floor(mins / 15);
 }
 
 /**
@@ -331,6 +335,7 @@ function updateWeather(lat, long) {
 		}
 
 		// Set current weather
+		setText('today-jieqi', jieQi);
 		setText('today-weather', WEATHER_CODES[weather.daily.weather_code[0]]);
 		setText('today-high', temperatureText(weather.daily.temperature_2m_max[0]));
 		setText('today-low', temperatureText(weather.daily.temperature_2m_min[0]));
@@ -367,8 +372,7 @@ function updateWeather(lat, long) {
 	})
 }
 
-function updateDate() {
-	let currDate = new Date();
+function updateDate(currDate) {
 	let lunarDate = Lunar.fromDate(currDate);
 
 	setText('lunar-date',
@@ -382,10 +386,11 @@ function updateDate() {
 		dayOfWeek = "次" + 曜日順序[currDate.getDay()];
 	}
 	setText('western-date',
+		hanziNum(currDate.getHours()) + "𣇞" + hanziNum(currDate.getMinutes()) + "𤼵" +
 		dayOfWeek + LONG_SPACE + 
-		"𣈗" + hanziNum(currDate.getDate()) + 
-		"𣎃" + hanziNum(currDate.getMonth() + 1) +
-		"𢆥" + hanziDigits(currDate.getFullYear())
+		DAY + hanziNum(currDate.getDate()) + 
+		MONTH + hanziNum(currDate.getMonth() + 1) +
+		YEAR + hanziDigits(currDate.getFullYear())
 	);
 
 	let jieQiSimplified = lunarDate.getPrevJieQi().getName();
@@ -400,4 +405,15 @@ navigator.geolocation.getCurrentPosition((position) => {
   updateWeather(position.coords.latitude, position.coords.longitude);
 });
 
-updateDate();
+function updateEverything(){
+	navigator.geolocation.getCurrentPosition(
+		(position) => {
+			updateWeather(position.coords.latitude, position.coords.longitude);
+		}
+	);
+
+	updateDate(new Date());
+}
+
+setInterval(updateEverything, 30*1000);
+updateEverything();
