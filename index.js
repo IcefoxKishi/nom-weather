@@ -112,7 +112,7 @@ const PRESIDENT_FIRST_YEAR = 2024;
 const PRESIDENT = "蘇總";
 
 function setText(id, text) {
-  document.getElementById(id).textContent = String(text);
+  document.getElementById(id).innerHTML = String(text);
 }
 
 function unicodeSlice(str, start, end) {
@@ -402,7 +402,7 @@ function updateWeather(lat, long) {
           ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified]
           : jieQiSimplified;
 
-      setText("today-solar-term", "節" + jieQi);
+      setText("today-solar-term", "節" + jieQi ? jieQi : "");
       let newRow = document.createElement("tr");
       let jieqiEl = document.createElement("td");
       let headerEl = document.createElement("th");
@@ -410,7 +410,7 @@ function updateWeather(lat, long) {
       let highEl = document.createElement("td");
       let lowEl = document.createElement("td");
 
-      jieqiEl.textContent = "節" + jieQi;
+      jieqiEl.textContent = "節" + jieQi ? jieQi : "";
       headerEl.textContent = jiaziDay + LONG_SPACE + yaoriDay;
       weatherEl.textContent = WEATHER_CODES[weather.daily.weather_code[i]];
       highEl.textContent = temperatureText(weather.daily.temperature_2m_max[i]);
@@ -471,7 +471,7 @@ function updateDate(currDate) {
       "𤼵" +
       hanziNum(currDate.getSeconds()) +
       "𣆰" +
-      LONG_SPACE +
+      "<br>" +
       dayOfWeek +
       LONG_SPACE +
       DAY +
