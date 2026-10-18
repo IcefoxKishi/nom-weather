@@ -107,6 +107,9 @@ LUNAR_HOLIDAYS.set([5, 5], "節端午");
 LUNAR_HOLIDAYS.set([15, 7], "禮盂蘭");
 LUNAR_HOLIDAYS.set([15, 8], "節中秋");
 LUNAR_HOLIDAYS.set([23, 12], "節翁公翁竈");
+const PRESIDENT_BDAY = [10, 7];
+const PRESIDENT_FIRST_YEAR = 2024;
+const PRESIDENT = "蘇總";
 
 function setText(id, text) {
   document.getElementById(id).textContent = String(text);
@@ -446,6 +449,20 @@ function updateDate(currDate) {
   } else {
     dayOfWeek = "次" + 曜日順序[currDate.getDay()];
   }
+  let yearDisplay = "";
+  if (
+    _.isEmpty(
+      _.xor(PRESIDENT_BDAY, [currDate.getDate(), currDate.getMonth() + 1]),
+    )
+  ) {
+    yearDisplay =
+      "𢆥" +
+      PRESIDENT +
+      "次" +
+      hanziNum(currDate.getFullYear() - PRESIDENT_FIRST_YEAR + 1) ? currDate.getFullYear() != PRESIDENT_FIRST_YEAR : PRESIDENT + "元年";
+  } else {
+    yearDisplay = YEAR + hanziNum(currDate.getFullYear());
+  }
   setText(
     "western-date",
     hanziNum(currDate.getHours()) +
@@ -454,17 +471,18 @@ function updateDate(currDate) {
       "𤼵" +
       hanziNum(currDate.getSeconds()) +
       "𣆰" +
+      LONG_SPACE +
       dayOfWeek +
       LONG_SPACE +
       DAY +
       hanziNum(currDate.getDate()) +
       MONTH +
       hanziNum(currDate.getMonth() + 1) +
-      YEAR +
-      hanziNum(currDate.getFullYear()) +
-      (SOLAR_HOLIDAYS.get([currDate.getDate(), currDate.getMonth() + 1])
-        ? SOLAR_HOLIDAYS.has([currDate.getDate(), currDate.getMonth() + 1])
-        : ""),
+      yearDisplay(
+        SOLAR_HOLIDAYS.get([currDate.getDate(), currDate.getMonth() + 1])
+          ? SOLAR_HOLIDAYS.has([currDate.getDate(), currDate.getMonth() + 1])
+          : "",
+      ),
   );
 
   let jieQiSimplified = lunarDate.getPrevJieQi().getName();
