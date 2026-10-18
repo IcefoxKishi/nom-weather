@@ -104,14 +104,6 @@ function temperatureText(temp) {
   return hanziNum(Math.round(temp)) + DEGREE_SYMBOL;
 }
 
-/**
- * Modulo operation, which works on negative numbers in a cyclic fashion.
- *
- * For example, `mod(-5, 60)` returns 55.
- */
-function mod(a, b) {
-  return ((a % b) + b) % b;
-}
 function getGanZhi(date) {
   return (
     天干順序[
@@ -274,7 +266,13 @@ function updateWeather(lat, long) {
 
     setText(
       "curr-weather",
-      WEATHER_CODES[weather.current.weather_code] + LONG_SPACE + currTemp,
+      WEATHER_CODES[weather.current.weather_code] +
+        LONG_SPACE +
+        currTemp +
+        LONG_SPACE +
+        "度𣼩" +
+        hanziNum(Math.round(weather.current.relative_humidity_2m)) +
+        "分𤾓",
     );
 
     /* Hourly weather */
