@@ -478,10 +478,10 @@ function updateDate(currDate) {
       hanziNum(currDate.getDate()) +
       MONTH +
       hanziNum(currDate.getMonth() + 1) +
-      yearDisplay(
+      yearDisplay + (
         SOLAR_HOLIDAYS.get([currDate.getDate(), currDate.getMonth() + 1])
           ? SOLAR_HOLIDAYS.has([currDate.getDate(), currDate.getMonth() + 1])
-          : "",
+          : ""
       ),
   );
 
