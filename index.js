@@ -100,10 +100,6 @@ function hanziNum(n) {
   return j;
 }
 
-function hanziDigits(n) {
-  return [...String(n)].map((d) => DIGITS[d]).join("");
-}
-
 function temperatureText(temp) {
   return hanziNum(Math.round(temp)) + DEGREE_SYMBOL;
 }
@@ -428,7 +424,7 @@ function updateDate(currDate) {
       MONTH +
       hanziNum(currDate.getMonth() + 1) +
       YEAR +
-      hanziDigits(currDate.getFullYear()),
+      hanziNum(currDate.getFullYear()),
   );
 
   let jieQiSimplified = lunarDate.getPrevJieQi().getName();
