@@ -402,19 +402,13 @@ function updateDate(currDate) {
   } else {
     dayOfWeek = "次" + 曜日順序[currDate.getDay()];
   }
-  let minutes = "";
-  if (currDate.getMinutes() == 0) {
-    minutes = "董";
-  } else if (currDate.getMinutes() == 30) {
-    minutes = "𥙪";
-  } else {
-    minutes = hanziNum(currDate.getMinutes()) + "𤼵";
-  }
   setText(
     "western-date",
     hanziNum(currDate.getHours()) +
       "𣇞" +
-      minutes +
+      hanziNum(currDate.getMinutes()) + "𤼵" +
+      hanziNum(currDate.getSeconds()) +
+      "𣆰" +
       dayOfWeek +
       LONG_SPACE +
       DAY +
@@ -445,6 +439,12 @@ function updateEverything() {
 
   updateDate(new Date());
 }
-
-setInterval(updateEverything, 30 * 1000);
+setInterval(function () {
+  updateDate(new Date());
+}, 1000);
+setInterval(function(){
+	navigator.geolocation.getCurrentPosition((position) => {
+    updateWeather(position.coords.latitude, position.coords.longitude);
+  });
+}, 30 * 1000);
 updateEverything();
