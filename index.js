@@ -333,6 +333,7 @@ function updateWeather(lat, long) {
     let sunsets = weather.daily.sunset.slice(0, 3);
 
     // Set curr weather
+    console.log(weather.current.weather_code);
     setText("curr-hour-weather", WEATHER_CODES[weather.current.weather_code]);
     setText("curr-hour-temp", temperatureText(actTemp));
 
@@ -390,7 +391,6 @@ function updateWeather(lat, long) {
     setText("today-low", temperatureText(weather.daily.temperature_2m_min[0]));
 
     for (let i = 1; i < weather.daily.time.length; ++i) {
-      console.log("day " + String(i));
       let date = weather.daily.time[i];
       let lunarDate = Lunar.fromDate(date);
       let yaoriDay = 曜日順序[date.getDay()];
