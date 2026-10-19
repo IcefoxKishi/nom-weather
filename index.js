@@ -2,7 +2,7 @@
 
 import { fetchWeatherApi } from "https://esm.sh/openmeteo";
 import * as cn from "https://unpkg.com/chinese-numbering@1.x/bundle/es.js";
-import { solar2lunar, jdFromDate } from "./lunar.js";
+import { solar2lunar, jdFromDate, getMoonPhase } from "./lunar.js";
 
 const HOURLY_WEATHER_ID = "hourly";
 
@@ -72,6 +72,16 @@ const 天干順序 = "甲乙丙丁戊己庚辛壬癸";
 const 地支順序 = "子丑寅卯辰巳午未申酉戌亥";
 const DIGITS = [..."空𠬠𠄩𠀧𦊚𠄼𦒹𠤩𠔭𠃩"];
 const 曜日順序 = [..."日𠄩𠀧四𠄼𦒹𠤩"];
+const MOON_PHASES = [
+  "𦝄朔",
+  "𦝄𧀒",
+  "𦝄上弦",
+  "𦝄張弦𧷺寅",
+  "𦝄𦝃",
+  "𦝄張弦缺寅",
+  "𦝄下弦",
+  "𦝄残",
+];
 const 干支配數 = 60;
 const DIRECTIONS = [
   "北（離）",
@@ -85,8 +95,11 @@ const DIRECTIONS = [
 ];
 const DEGREES_IN_CIRCLE = 360;
 const DIR_INTERVAL = DEGREES_IN_CIRCLE / DIRECTIONS.length;
+const MANSIONS = "角亢氐房心尾箕斗牛女虛危室壁奎婁胃昴畢觜参井鬼柳星張翼軫";
+const LOG3_2_INVERT = 1 / Math.log(3 / 2);
 const SOLAR_HOLIDAYS = new WeakMap();
 const LUNAR_HOLIDAYS = new WeakMap();
+
 SOLAR_HOLIDAYS.set([1, 1], "節陽曆");
 SOLAR_HOLIDAYS.set([30, 4], "𣈗解放沔南");
 SOLAR_HOLIDAYS.set([1, 5], "國際勞動");
@@ -107,6 +120,7 @@ LUNAR_HOLIDAYS.set([5, 5], "節端午");
 LUNAR_HOLIDAYS.set([15, 7], "禮盂蘭");
 LUNAR_HOLIDAYS.set([15, 8], "節中秋");
 LUNAR_HOLIDAYS.set([23, 12], "節翁公翁竈");
+
 const PRESIDENT_BDAY = [10, 7];
 const PRESIDENT_FIRST_YEAR = 2024;
 const PRESIDENT = "蘇總";
@@ -177,6 +191,21 @@ function lunarDateToNom(date) {
   year = "𢆥" + getYearGanZhi(date[2]);
   return day + month + leap + year;
 }
+
+function mansion(date) {
+  return (
+    "𬁖" +
+    MANSIONS[
+      (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) +
+        12) %
+        28
+    ]
+  );
+}
+function beaufort(speed) {
+  return Math.floor(Math.log(speed / 0.836) / LOG3_2_INVERT);
+}
+
 async function getWeather(lat, long) {
   const params = {
     latitude: lat,
@@ -308,6 +337,7 @@ function updateWeather(lat, long) {
       (weather.current.wind_direction_10m + DIR_INTERVAL) % DEGREES_IN_CIRCLE;
     let windDir = DIRECTIONS[Math.floor(adjustedDir / DIR_INTERVAL)];
     let windSpeed = `${hanziNum(Math.round(weather.current.wind_speed_10m))}𣘃數𨑗𣇞`;
+    let windLevel = `𩙍級${hanziNum(beaufort(weather.current.wind_speed_10m))}`;
     setText(
       "curr-weather",
       WEATHER_CODES[weather.current.weather_code] +
@@ -318,7 +348,10 @@ function updateWeather(lat, long) {
         hanziNum(Math.round(weather.current.relative_humidity_2m)) +
         "分𤾓",
     );
-    setText("wind-info", windDir + LONG_SPACE + windSpeed);
+    setText(
+      "wind-info",
+      windDir + LONG_SPACE + windSpeed + LONG_SPACE + windLevel,
+    );
 
     /* Hourly weather */
 
@@ -427,6 +460,11 @@ function updateWeather(lat, long) {
 
 function updateDate(currDate) {
   let lunarDate = Lunar.fromDate(currDate);
+  let jieQiSimplified = lunarDate.getPrevJieQi().getName();
+  let jieQi =
+    jieQiSimplified in SOLAR_TERMS_TRADITIONAL
+      ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified]
+      : jieQiSimplified;
   let temp = solar2lunar(
     currDate.getDate(),
     currDate.getMonth(),
@@ -436,12 +474,25 @@ function updateDate(currDate) {
   setText(
     "lunar-date",
     lunarDateToNom(temp) +
-      LONG_SPACE +
+      "<br>𣈗" +
       getGanZhi(currDate) +
-      (temp[0] == 15 ? "𦝃𣎃" + hanziNum(temp[1]) : "") +
+      (temp[0] == 15 ? LONG_SPACE + "𦝃𣎃" + hanziNum(temp[1]) : "") +
       (LUNAR_HOLIDAYS.get([temp[0], temp[1]])
         ? LUNAR_HOLIDAYS.has([temp[0], temp[1]])
-        : ""),
+        : "") +
+      LONG_SPACE +
+      "節" +
+      jieQi +
+      LONG_SPACE +
+      mansion(currDate) +
+      LONG_SPACE +
+      MOON_PHASES[
+        getMoonPhase(
+          currDate.getFullYear(),
+          currDate.getMonth() + 1,
+          currDate.getDate(),
+        )
+      ],
   );
   let dayOfWeek = "";
   if (currDate.getDay() == 0) {
@@ -459,7 +510,9 @@ function updateDate(currDate) {
       "𢆥" +
       PRESIDENT +
       "次" +
-      hanziNum(currDate.getFullYear() - PRESIDENT_FIRST_YEAR + 1) ? currDate.getFullYear() != PRESIDENT_FIRST_YEAR : PRESIDENT + "元年";
+      hanziNum(currDate.getFullYear() - PRESIDENT_FIRST_YEAR + 1)
+        ? currDate.getFullYear() != PRESIDENT_FIRST_YEAR
+        : PRESIDENT + "元年";
   } else {
     yearDisplay = YEAR + hanziNum(currDate.getFullYear());
   }
@@ -478,20 +531,11 @@ function updateDate(currDate) {
       hanziNum(currDate.getDate()) +
       MONTH +
       hanziNum(currDate.getMonth() + 1) +
-      yearDisplay + (
-        SOLAR_HOLIDAYS.get([currDate.getDate(), currDate.getMonth() + 1])
-          ? SOLAR_HOLIDAYS.has([currDate.getDate(), currDate.getMonth() + 1])
-          : ""
-      ),
+      yearDisplay +
+      (SOLAR_HOLIDAYS.get([currDate.getDate(), currDate.getMonth() + 1])
+        ? SOLAR_HOLIDAYS.has([currDate.getDate(), currDate.getMonth() + 1])
+        : ""),
   );
-
-  let jieQiSimplified = lunarDate.getPrevJieQi().getName();
-  let jieQi =
-    jieQiSimplified in SOLAR_TERMS_TRADITIONAL
-      ? SOLAR_TERMS_TRADITIONAL[jieQiSimplified]
-      : jieQiSimplified;
-
-  setText("curr-jieqi", "節" + jieQi);
 }
 
 navigator.geolocation.getCurrentPosition((position) => {
