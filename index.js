@@ -203,7 +203,7 @@ function mansion(date) {
   );
 }
 function beaufort(speed) {
-  return Math.floor(Math.log(speed / 0.836) / LOG3_2_INVERT);
+  return Math.floor(Math.log(speed / 0.836) * LOG3_2_INVERT);
 }
 
 async function getWeather(lat, long) {
@@ -337,7 +337,7 @@ function updateWeather(lat, long) {
       (weather.current.wind_direction_10m + DIR_INTERVAL) % DEGREES_IN_CIRCLE;
     let windDir = DIRECTIONS[Math.floor(adjustedDir / DIR_INTERVAL)];
     let windSpeed = `${hanziNum(Math.round(weather.current.wind_speed_10m))}𣘃數𨑗𣇞`;
-    let windLevel = `𩙍級${hanziNum(beaufort(weather.current.wind_speed_10m))}`;
+    let windLevel = `𩙍級${hanziNum(beaufort(weather.current.wind_speed_10m * 1000 / 3600))}`;
     setText(
       "curr-weather",
       WEATHER_CODES[weather.current.weather_code] +
