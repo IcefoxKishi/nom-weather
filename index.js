@@ -197,7 +197,7 @@ function mansion(date) {
     "𬁖" +
     MANSIONS[
       (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) +
-        12) %
+        11 + Math.floor((date.getFullYear()-1996+2)/4)) %
         28
     ]
   );
