@@ -196,9 +196,7 @@ function mansion(date) {
   return (
     "𬁖" +
     MANSIONS[
-      (jdFromDate(date.getDate(), date.getMonth() + 1, date.getFullYear()) +
-        11 + Math.floor((date.getFullYear()-1996+2)/4)) %
-        28
+      (jdFromDate(26,10,2026)-jdFromDate(1,1,1995)+10)%28
     ]
   );
 }
